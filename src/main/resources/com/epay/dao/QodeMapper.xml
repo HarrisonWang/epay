@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.epay.dao.QodeMapper">
+
+    <parameterMap type="java.util.Map" id="params" />
+
+    <insert id="batchSave" parameterType="java.util.List">
+        INSERT INTO t_qq_code(id, qq_code, qq_type, qq_valid, areaCode, insertDate) VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+	        (null, #{item.code}, #{item.type}, #{item.valid}, #{item.areaCode}, #{item.insertDate})
+        </foreach>
+    </insert>
+    
+    <select id="count" parameterMap="params" resultType="int">
+        SELECT COUNT(*) FROM t_qq_code
+        <where>
+            <if test="type != null and type != 0">
+                qq_type = #{type}
+            </if>
+            <if test="valid != null and valid == 0 or valid == 1">
+                AND qq_valid = #{valid}
+            </if>
+            <if test="areaCode != null and areaCode != '' and areaCode != -1">
+                AND areaCode = #{areaCode}
+            </if>
+        </where>
+    </select>
+    
+    <select id="find" parameterMap="params" resultType="Qode">
+        SELECT id, qq_code as code, qq_type as type, qq_valid as valid, areaCode FROM t_qq_code
+        <where>
+            <if test="type != null and type != 0">
+                qq_type = #{type}
+            </if>
+            <if test="valid != null and valid == 0 or valid == 1">
+                AND qq_valid = #{valid}
+            </if>
+            <if test="areaCode != null and areaCode != '' and areaCode != -1">
+                AND areaCode = #{areaCode}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="sumMoney" parameterMap="params" resultType="double">
+       SELECT IFNULL(SUM(t.qq_type), 0) AS money FROM t_qq_code t
+           <where>
+                <if test="type != null and type != -1">
+                  AND t.qq_type = #{type}
+                </if>
+                <if test="areaCode != null and areaCode != -1">
+                  AND t.areacode = #{areaCode}
+                </if>
+                <if test="valid != null and valid != -1">
+                  AND t.qq_valid = #{valid}
+                </if>
+           </where>
+    </select>
+    
+</mapper>

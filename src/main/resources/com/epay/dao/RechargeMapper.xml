@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.epay.dao.RechargeMapper">
+
+    <parameterMap type="java.util.Map" id="params" />
+    
+	<select id="count" resultType="int">
+        SELECT count(*) FROM t_fill_log l, t_account a WHERE l.account_id = a.id
+	</select>
+	
+	<select id="countByParams" parameterMap="params" resultType="int">
+		SELECT count(*) FROM t_fill_log l, t_account a
+		<where>
+		   l.account_id = a.id
+           <if test="beginDate != '' and endDate != ''">
+               <![CDATA[AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+           </if>
+           <if test="beginDate != '' and endDate == ''">
+               <![CDATA[AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') <= CURDATE()]]>
+           </if>
+           <if test="beginDate == '' and endDate != ''">
+               <![CDATA[AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+           </if>
+           <if test="status == 0 or status == 1">
+             AND l.fill_result = #{status}
+           </if>
+           <if test="userId != null and userId != ''">
+             AND l.user_id = #{userId}
+           </if>
+           <if test="accountId != null and accountId != 0">
+             AND l.account_id = #{accountId}
+           </if>
+           <if test="fillType != null">
+             AND l.fill_type = #{fillType}
+           </if>
+		</where>
+	</select>
+    
+    <select id="get" parameterType="Page" resultType="RefillLog">
+          SELECT l.id,
+               l.user_id as userId,
+               a.account_number as accountNumber,
+               l.fill_amount as amount,
+               l.fill_result as result,
+               l.fail_msg as msg,
+               l.fill_time as time,
+               l.fill_type as fillType
+          FROM t_fill_log l, t_account a
+          WHERE l.account_id = a.id
+          ORDER BY l.fill_time DESC
+          LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="find" parameterMap="params" resultType="RefillLog">
+          SELECT l.id,
+               l.user_id as userId,
+               l.account_id as accountId,
+               a.account_number as accountNumber,
+               l.fill_amount as amount,
+               l.fill_result as result,
+               l.fail_msg as msg,
+               l.fill_time as time,
+               l.fill_type as fillType
+          FROM t_fill_log l, t_account a
+        <where>
+            l.account_id = a.id
+               <if test="beginDate != '' and endDate != ''">
+                   <![CDATA[ AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+               </if>
+               <if test="beginDate != '' and endDate == ''">
+                   <![CDATA[ AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') <= CURDATE()]]>
+               </if>
+               <if test="beginDate == '' and endDate != ''">
+                   <![CDATA[ AND DATE_FORMAT(l.fill_time,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+               </if>
+                <if test="status == 0 or status == 1">
+                  AND l.fill_result = #{status}
+                </if>
+                <if test="userId != null and userId != ''">
+                  AND l.user_id = #{userId}
+                </if>
+                <if test="accountId != null and accountId != 0">
+                    AND l.account_id = #{accountId}
+                </if>
+	            <if test="fillType != null">
+	                AND l.fill_type = #{fillType}
+	            </if>
+        </where>
+          ORDER BY l.fill_time DESC
+          LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="sumMoney" parameterMap="params" resultType="double">
+		SELECT ifnull(SUM(t.fill_amount), 0) AS money
+		  FROM t_fill_log t, t_account a
+		<where>
+		  t.account_id = a.id
+		  <if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+		    <![CDATA[AND DATE_FORMAT(t.fill_time, '%Y-%m-%d') >= STR_TO_DATE(#{beginDate}, '%Y-%m-%d') AND DATE_FORMAT(t.fill_time, '%Y-%m-%d') <= STR_TO_DATE(#{endDate}, '%Y-%m-%d')]]>
+		  </if>
+          <if test="beginDate != null and beginDate != '' and endDate != null and endDate == ''">
+            <![CDATA[AND DATE_FORMAT(t.fill_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(t.fill_time,'%Y-%m-%d') <= CURDATE()]]>
+          </if>
+          <if test="beginDate != null and beginDate == '' and endDate != null and endDate != ''">
+            <![CDATA[AND DATE_FORMAT(t.fill_time,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+          </if>
+          <if test="status == 0">
+            AND t.fill_result = 0
+          </if>
+          <if test="status == 1">
+            AND t.fill_result != 0
+          </if>
+          <if test="userId != null and userId != ''">
+            AND t.user_id = #{userId}
+          </if>
+          <if test="accountId != null and accountId != ''">
+            AND t.account_id = #{accountId}
+          </if>
+          <if test="fillType != null">
+            AND t.fill_type = #{fillType}
+          </if>
+        </where>
+    </select>
+
+</mapper>

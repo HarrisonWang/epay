@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.epay.dao.TradeLogMapper">
+
+    <parameterMap type="java.util.Map" id="params" />
+    
+    <resultMap type="java.util.Map" id="results">
+        <result property="success" column="success"/>
+        <result property="failure" column="failure"/>
+    </resultMap>
+    
+	<insert id="save" parameterType="TradeLog">
+		INSERT INTO t_trade_log
+		  (id,
+		   user_id,
+		   trade_account,
+		   account_type,
+		   trade_amount,
+		   fill_type,
+		   trade_result,
+		   fail_msg,
+		   trade_time)
+		VALUES
+		  (null,
+		   #{userId},
+		   #{tradeAccount},
+		   #{accountType},
+		   #{tradeAmount},
+		   #{fillType},
+		   #{tradeResult},
+		   fail_msg,
+		   trade_time)
+	</insert>
+	
+	<select id="count" resultType="int">
+		SELECT count(*) FROM t_trade_log
+	</select>
+	
+	<select id="countByParams" parameterMap="params" resultType="int">
+		SELECT count(*) FROM t_trade_log
+		<where>
+	           <if test="beginDate != '' and endDate != ''">
+		           <![CDATA[DATE_FORMAT(trade_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(trade_time,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+	           </if>
+	           <if test="beginDate != '' and endDate == ''">
+	               <![CDATA[DATE_FORMAT(trade_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(trade_time,'%Y-%m-%d') <= CURDATE()]]>
+	           </if>
+	           <if test="beginDate == '' and endDate != ''">
+	               <![CDATA[DATE_FORMAT(trade_time,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+	           </if>
+                <if test="status == 0">
+                  AND trade_result = 0
+                </if>
+                <if test="status == 1">
+                  AND trade_result != 0
+                </if>
+                <if test="userId != null and userId != ''">
+                  AND user_id = #{userId}
+                </if>
+                <if test="accountId != null and accountId != ''">
+                    AND trade_account = #{accountId}
+                </if>
+                <if test="bizType != null and bizType != -1">
+                    AND number_type = #{bizType}
+                </if>
+		</where>
+	</select>
+    
+    <select id="get" parameterType="Page" resultType="TradeLog">
+        SELECT l.id,
+               l.user_id as userId,
+               l.trade_number as tradeNumber,
+               l.number_type as numberType,
+               l.trade_amount as tradeAmount,
+               l.fill_type as fillType,
+               l.trade_result as tradeResult,
+               l.fail_msg as failMsg,
+               l.trade_time as tradeTime,
+               l.trade_account as tradeAccount,
+               (select account_number from t_account where id=l.trade_account) as accountNumber,
+               l.trade_phone as tradePhone,
+               l.task_id as taskId,
+               u.user_areacode as areaCode
+          FROM t_trade_log l, t_user u
+          <where>
+          l.user_id = u.user_id
+          </where>
+          ORDER BY l.trade_time DESC
+          LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="find" parameterMap="params" resultType="TradeLog">
+        SELECT l.id,
+               l.user_id as userId,
+               l.trade_number as tradeNumber,
+               l.number_type as numberType,
+               l.trade_amount as tradeAmount,
+               l.fill_type as fillType,
+               l.trade_result as tradeResult,
+               l.fail_msg as failMsg,
+               l.trade_time as tradeTime,
+               l.trade_account as tradeAccount,
+               (select account_number from t_account where id=l.trade_account) as accountNumber,
+               l.trade_phone as tradePhone,
+               l.task_id as taskId,
+               u.user_areacode as areaCode
+          FROM t_trade_log l, t_user u
+        <where>
+          l.user_id = u.user_id
+           <if test="beginDate != '' and endDate != ''">
+               <![CDATA[AND DATE_FORMAT(l.trade_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(l.trade_time,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+           </if>
+           <if test="beginDate != '' and endDate == ''">
+               <![CDATA[AND DATE_FORMAT(l.trade_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(l.trade_time,'%Y-%m-%d') <= CURDATE()]]>
+           </if>
+           <if test="beginDate == '' and endDate != ''">
+               AND <![CDATA[AND DATE_FORMAT(l.trade_time,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+           </if>
+            <if test="status == 0">
+              AND l.trade_result = 0
+            </if>
+            <if test="status == 1">
+              AND l.trade_result != 0
+            </if>
+            <if test="userId != null and userId != ''">
+              AND l.user_id = #{userId}
+            </if>
+            <if test="accountId != null and accountId != ''">
+                AND l.trade_account = #{accountId}
+            </if>
+            <if test="bizType != null and bizType != -1">
+                AND number_type = #{bizType}
+            </if>
+        </where>
+          ORDER BY l.trade_time DESC
+          LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <sql id="countSql">
+        SELECT s.month, t.total
+          FROM (
+            SELECT DATE_FORMAT(t.trade_time, '%c') as month, SUM(t.trade_amount) as total
+              FROM t_trade_log t
+              <where>
+                 <choose>
+                     <when test="year != 0">
+                         DATE_FORMAT(t.trade_time, '%Y')=#{year}
+                     </when>
+                     <otherwise>
+                         DATE_FORMAT(t.trade_time, '%Y')=DATE_FORMAT(now(), '%Y')
+                     </otherwise>
+                 </choose>
+                 AND t.trade_result = 0
+              </where>
+              GROUP BY date_format(t.trade_time, '%Y-%m')
+          ) t
+          RIGHT JOIN t_trade_statistics s ON t.month = s.month
+    </sql>
+
+	<select id="statisticsForPie" parameterType="int" resultType="Statistics">
+	   SELECT a.month, a.total/(SELECT SUM(b.total) FROM (<include refid="countSql"/>) b)*100 AS total FROM (<include refid="countSql"/>) a
+	</select>
+	
+	<!--<select id="statisticsForPie" parameterType="int" resultType="Statistics"></select> -->
+	
+	<select id="statisticsForLineOrColumn" parameterType="int" resultType="double">
+        SELECT ifnull(t.total, 0) as total
+          FROM (
+            SELECT DATE_FORMAT(t.trade_time, '%c') as month, SUM(t.trade_amount) as total
+              FROM t_trade_log t
+              <where>
+                 <choose>
+                     <when test="year != null and year != 0">
+                         DATE_FORMAT(t.trade_time, '%Y')=#{year}
+                     </when>
+                     <otherwise>
+                         DATE_FORMAT(t.trade_time, '%Y')=DATE_FORMAT(now(), '%Y')
+                     </otherwise>
+                 </choose>
+                 AND t.trade_result = 0
+              </where>
+              GROUP BY date_format(t.trade_time, '%Y-%m')
+          ) t
+          RIGHT JOIN t_trade_statistics s ON t.month = s.month
+	</select>
+	
+	<select id="getAllYear" resultType="int">
+	   select DISTINCT DATE_FORMAT(t.trade_time,'%Y') from t_trade_log t
+	   <where>
+	       t.trade_result = 0
+	   </where>
+	</select>
+	
+	<select id="sumMoney" parameterMap="params" resultMap="results">
+	   SELECT SUM(CASE WHEN t.trade_result=0 THEN t.trade_amount ELSE 0 END) AS success, SUM(CASE WHEN t.trade_result=0 THEN 0 ELSE t.trade_amount END) AS failure FROM t_trade_log t
+	       <where>
+	           <if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+	               <![CDATA[AND DATE_FORMAT(t.trade_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(t.trade_time,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+	           </if>
+	           <if test="beginDate != null and beginDate != '' and endDate != null and endDate == ''">
+	               <![CDATA[AND DATE_FORMAT(t.trade_time,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(t.trade_time,'%Y-%m-%d') <= CURDATE()]]>
+	           </if>
+	           <if test="beginDate != null and beginDate == '' and endDate != null and endDate != ''">
+	               AND <![CDATA[DATE_FORMAT(t.trade_time,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+	           </if>
+	            <if test="status == 0">
+	              AND t.trade_result = 0
+	            </if>
+	            <if test="status == 1">
+	              AND t.trade_result != 0
+	            </if>
+	            <if test="userId != null and userId != ''">
+	              AND t.user_id = #{userId}
+	            </if>
+	            <if test="accountId != null and accountId != ''">
+	                AND t.trade_account = #{accountId}
+	            </if>
+	            <if test="bizType != null and bizType != -1">
+	                AND number_type = #{bizType}
+	            </if>
+	       </where>
+	</select>
+
+</mapper>

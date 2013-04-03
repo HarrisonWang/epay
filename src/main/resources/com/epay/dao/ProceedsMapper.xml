@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.epay.dao.ProceedsMapper">
+
+    <parameterMap type="java.util.Map" id="params" />
+
+    <insert id="save" parameterType="Proceeds">
+        INSERT INTO t_proceeds(id, account_name, biz_type, transfer_money, transfer_date, create_time)
+         VALUES(null, #{accountName}, #{bizType}, #{transferMoney}, STR_TO_DATE(#{transferDate},'%Y-%m-%d'), now())
+    </insert>
+    
+    <select id="count" resultType="int" parameterMap="params">
+        SELECT count(id) FROM t_proceeds
+        <where>
+            <if test="bizType != null and bizType != -1">
+                AND biz_type = #{bizType}
+            </if>
+            <if test="accountName != null and accountName != ''" >
+                AND account_name = #{accountName}
+            </if>
+            <if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+                <![CDATA[AND DATE_FORMAT(transfer_date,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(transfer_date,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+            </if>
+            <if test="beginDate != null and beginDate != '' and endDate != null and endDate == ''">
+                <![CDATA[AND DATE_FORMAT(transfer_date,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(transfer_date,'%Y-%m-%d') <= CURDATE()]]>
+            </if>
+            <if test="beginDate != null and beginDate == '' and endDate != null and endDate != ''">
+                <![CDATA[AND DATE_FORMAT(transfer_date,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+            </if>
+        </where>
+    </select>
+    
+    <select id="find" parameterMap="params" resultType="Proceeds">
+        SELECT id, account_name as accountName, biz_type as bizType, transfer_money as transferMoney, transfer_date as transferDate, create_time as createTime FROM t_proceeds ORDER BY id DESC LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="search" parameterMap="params" resultType="Proceeds">
+        SELECT id, account_name as accountName, biz_type as bizType, transfer_money as transferMoney, transfer_date as transferDate, create_time as createTime FROM t_proceeds
+        <where>
+            <if test="bizType != null and bizType != -1">
+                AND biz_type = #{bizType}
+            </if>
+            <if test="accountName != null and accountName != ''" >
+                AND account_name = #{accountName}
+            </if>
+            <if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+                <![CDATA[AND DATE_FORMAT(transfer_date,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(transfer_date,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+            </if>
+            <if test="beginDate != null and beginDate != '' and endDate != null and endDate == ''">
+                <![CDATA[AND DATE_FORMAT(transfer_date,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(transfer_date,'%Y-%m-%d') <= CURDATE()]]>
+            </if>
+            <if test="beginDate != null and beginDate == '' and endDate != null and endDate != ''">
+                <![CDATA[AND DATE_FORMAT(transfer_date,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+            </if>
+        </where>
+        ORDER BY id DESC LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="sumMoney" parameterMap="params" resultType="double">
+       SELECT IFNULL(SUM(t.transfer_money), 0) as money FROM t_proceeds t
+           <where>
+               <if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+                   <![CDATA[AND DATE_FORMAT(t.transfer_date,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(t.transfer_date,'%Y-%m-%d') <= STR_TO_DATE(#{endDate},'%Y-%m-%d')]]>
+               </if>
+               <if test="beginDate != null and beginDate != '' and endDate != null and endDate == ''">
+                   <![CDATA[AND DATE_FORMAT(t.transfer_date,'%Y-%m-%d') >= STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND DATE_FORMAT(t.transfer_date,'%Y-%m-%d') <= CURDATE()]]>
+               </if>
+               <if test="beginDate != null and beginDate == '' and endDate != null and endDate != ''">
+                   <![CDATA[AND DATE_FORMAT(t.transfer_date,'%Y-%m-%d') <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+               </if>
+                <if test="bizType != null and bizType != -1">
+                   AND t.biz_type = #{bizType}
+                </if>
+                <if test="accountName != null and accountName != ''">
+                   AND t.account_name = #{accountName}
+                </if>
+           </where>
+    </select>
+    
+</mapper>

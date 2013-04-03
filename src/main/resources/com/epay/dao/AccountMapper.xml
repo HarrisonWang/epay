@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.epay.dao.AccountMapper">
+
+	<parameterMap type="java.util.Map" id="params" />
+
+    <insert id="save" parameterType="Account">
+        INSERT INTO t_account
+          (id,
+           account_number,
+           account_amount,
+           account_useamount,
+           account_balance,
+           account_createtime,
+           account_balance_hjd,
+           account_amount_hjd,
+           account_useamount_hjd)
+        VALUES
+          (null,
+           #{accountNumber},
+           #{amount},
+           #{useAmount},
+           #{balance},
+           STR_TO_DATE(#{createTime},'%Y-%m-%d %H:%i:%s'),
+           #{account_balance_hjd},
+           #{account_amount_hjd},
+           #{account_useamount_hjd})
+        <selectKey resultType="java.lang.Integer" keyProperty="id">
+            <![CDATA[SELECT LAST_INSERT_ID() AS ID]]>
+        </selectKey>
+    </insert>
+	
+	<insert id="saveAccountType" parameterType="AccountType">
+		INSERT INTO t_account_type
+		  (account_id,
+		   account_type,
+		   account_level)
+		VALUES
+		  (#{accountId},
+		   #{type},
+		   #{level})
+	</insert>
+	
+	<delete id="delete" parameterType="Account">
+		DELETE FROM t_account WHERE id=#{id}
+	</delete>
+	
+	<update id="update" parameterType="Account">
+		UPDATE t_account
+		   SET account_amount    = #{amount},
+		       account_number    = #{accountNumber},
+		       account_useamount = #{useAmount},
+		       account_balance   = #{balance}
+		 <where>id = #{id}</where>
+	</update>
+	
+	<update id="update4hjd" parameterType="Account">
+        UPDATE t_account
+           SET account_amount_hjd    = #{amount},
+               account_number        = #{accountNumber},
+               account_useamount_hjd = #{useAmount},
+               account_balance_hjd   = #{balance}
+         <where>id = #{id}</where>
+	</update>
+	
+	<update id="updateAccountType" parameterType="AccountType">
+		UPDATE t_account_type
+		   SET account_level = #{level}
+		 <where>
+		 account_id = #{accountId} AND account_type = #{type}
+		 </where>
+	</update>
+	
+	<select id="count" resultType="java.lang.Integer">
+		SELECT count(*) FROM t_account
+	</select>
+	
+	<select id="list" resultType="Account">
+		SELECT id,
+		       account_number as accountNumber,
+		       account_amount as amount,
+		       account_useamount as useAmount,
+		       account_balance as balance,
+		       DATE_FORMAT(account_createtime,'%Y-%m-%d') as createTime,
+		       account_balance_hjd,
+		       account_amount_hjd,
+		       account_useamount_hjd
+		  FROM t_account
+          ORDER BY account_createtime desc
+	</select>
+
+    <select id="listByPage" parameterType="Page" resultType="Account">
+		SELECT id,
+               account_number as accountNumber,
+		       account_amount as amount,
+		       account_useamount as useAmount,
+		       account_balance as balance,
+		       DATE_FORMAT(account_createtime,'%Y-%m-%d') as createTime,
+               account_balance_hjd,
+               account_amount_hjd,
+               account_useamount_hjd
+		  FROM t_account
+		  ORDER BY account_createtime desc
+		LIMIT #{beginIndex}, #{pageSize}
+	</select>
+
+    <select id="find" parameterType="Account" resultType="Account">
+        SELECT id,
+               account_number as accountNumber,
+               account_amount as amount,
+		       account_useamount as useAmount,
+		       account_balance as balance,
+		       DATE_FORMAT(account_createtime,'%Y-%m-%d') as createTime,
+               account_balance_hjd,
+               account_amount_hjd,
+               account_useamount_hjd
+		  FROM t_account
+		  <where>
+		  id = #{id}
+		  </where>
+	</select>
+
+    <select id="findByNumber" parameterType="String" resultType="Account">
+        SELECT id,
+               account_number as accountNumber,
+               account_amount as amount,
+		       account_useamount as useAmount,
+		       account_balance as balance,
+		       account_createtime as createTime
+		  FROM t_account
+		  <where>
+		  account_number = #{accountNumber}
+		  </where>
+	</select>
+	
+	<select id="findAccountType" parameterType="AccountType" resultType="AccountType">
+		SELECT account_id as accountId,
+		       account_type as type,
+		       account_level as level
+		  FROM t_account_type
+		<where>
+		account_id = #{accountId} AND account_type = #{type}
+		</where>
+	</select>
+	
+	<insert id="saveFillLog" parameterType="RefillLog">
+		INSERT INTO t_fill_log
+		  (id, user_id, account_id, fill_amount, fill_result, fill_time, fail_msg, fill_type) VALUES
+		  (null, #{userId}, #{accountId}, #{amount}, #{result}, #{time}, #{msg}, #{fillType})
+	</insert>
+	
+	<select id="countFillLogs" parameterMap="params" resultType="java.lang.Integer">
+		SELECT count(*) FROM t_fill_log
+			<where>
+               <if test="beginDate != '' and endDate != ''">
+                   trade_time BETWEEN STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND STR_TO_DATE(#{endDate},'%Y-%m-%d')
+               </if>
+               <if test="beginDate != '' and endDate == ''">
+                   trade_time BETWEEN STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND CURDATE()
+               </if>
+               <if test="beginDate == '' and endDate != ''">
+                   <![CDATA[trade_time <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+               </if>
+                <if test="status == 0 or status == 1">
+                  AND fill_result = #{status}
+                </if>
+                <if test="userId != ''">
+                  AND user_id = #{userId}
+                </if>
+			</where>
+	</select>
+	
+	<select id="findFillLogs" parameterMap="params" resultType="RefillLog">
+		SELECT id,
+		       user_id as userId,
+		       account_id as accountId,
+		       fill_amount as amount,
+		       fill_result as result,
+		       fail_msg as msg,
+		       fill_time as time
+		  FROM t_fill_log
+        <where>
+               <if test="beginDate != '' and endDate != ''">
+                   trade_time BETWEEN STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND STR_TO_DATE(#{endDate},'%Y-%m-%d')
+               </if>
+               <if test="beginDate != '' and endDate == ''">
+                   trade_time BETWEEN STR_TO_DATE(#{beginDate},'%Y-%m-%d') AND CURDATE()
+               </if>
+               <if test="beginDate == '' and endDate != ''">
+                   <![CDATA[trade_time <= STR_TO_DATE(#{beginDate},'%Y-%m-%d')]]>
+               </if>
+                <if test="status == 0 or status == 1">
+                  AND fill_result = #{status}
+                </if>
+                <if test="userId != ''">
+                  AND user_id = #{userId}
+                </if>
+        </where>
+		  LIMIT #{beginIndex}, #{pageSize}
+	</select>
+
+</mapper>

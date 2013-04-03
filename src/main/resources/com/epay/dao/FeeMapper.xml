@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.epay.dao.FeeMapper">
+
+    <parameterMap type="java.util.Map" id="params" />
+
+    <insert id="save" parameterType="Fee">
+        INSERT INTO t_area_sx(areaCode, sx, city, type) VALUES(#{areaCode}, #{sx}, #{city}, #{type})
+    </insert>
+    
+    <select id="count" resultType="int">
+        SELECT count(areaCode) FROM t_area_sx
+    </select>
+    
+    <select id="find" parameterMap="params" resultType="Fee">
+        SELECT areaCode, sx, city, type FROM t_area_sx ORDER BY areaCode LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="get" parameterType="Fee" resultType="Fee">
+        SELECT areaCode, sx, city, type FROM t_area_sx WHERE areaCode = #{areaCode} AND type=#{type}
+    </select>
+    
+    <update id="update" parameterType="Fee">
+        UPDATE t_area_sx SET sx=#{sx}, city=#{city}
+        <where>
+            areaCode = #{areaCode} and type = #{type}
+        </where>
+    </update>
+    
+    <delete id="delete" parameterType="Fee">
+        DELETE FROM t_area_sx
+        <where>
+            areaCode = #{areaCode} and type=#{type}
+        </where>
+    </delete>
+
+</mapper>

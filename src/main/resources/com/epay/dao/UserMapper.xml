@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.epay.dao.UserMapper">
+
+    <parameterMap type="java.util.Map" id="params" />
+
+	<insert id="save" parameterType="User">
+		INSERT INTO t_user
+		  (id,
+		   user_id,
+		   user_name,
+		   user_password,
+		   user_paypwd,
+		   user_type,
+		   user_valid,
+		   user_areacode,
+		   user_phone,
+		   user_createtime,
+		   user_identitycard,
+		   user_desc,
+		   account_id,
+		   user_mac,
+		   biz_type)
+		VALUES
+		  (null,
+		   #{userId},
+		   #{userName},
+		   #{password},
+		   #{payPwd},
+		   #{type},
+		   #{valid},
+		   #{areaCode},
+		   #{phone},
+		   #{createTime},
+		   #{identityCard},
+		   #{description},
+		   #{accountId},
+		   #{userMac},
+		   #{bizType})
+	</insert>
+
+	<delete id="delete" parameterType="User">
+		DELETE FROM t_user WHERE user_id = #{userId}
+	</delete>
+
+	<update id="update" parameterType="User">
+		UPDATE t_user
+		   SET user_password     = #{password},
+		       user_paypwd       = #{payPwd},
+		       user_name         = #{userName},
+		       user_type         = #{type},
+		       user_valid        = #{valid},
+		       user_areacode     = #{areaCode},
+		       user_phone        = #{phone},
+		       user_identitycard = #{identityCard},
+		       user_desc         = #{description},
+		       account_id        = #{accountId},
+		       user_mac          = #{userMac},
+		       biz_type           = #{bizType}
+		 <where>
+		 	user_id = #{userId}
+		 </where>
+	</update>
+    
+    <select id="list" parameterType="Page" resultType="User">
+        SELECT u.id,
+               u.user_id as userId,
+               u.user_name as userName,
+               u.user_password as password,
+               u.user_paypwd as payPwd,
+               u.user_type as type,
+               u.user_valid as valid,
+               u.user_areacode as areaCode,
+               u.user_phone as phone,
+               u.user_createtime as createTime,
+               u.user_identitycard as identityCard,
+               u.user_desc as description,
+               u.account_id as accountId,
+               a.account_number as accountNumber,
+               u.user_mac as userMac,
+               u.biz_type as bizType
+          FROM t_user u, t_account a
+          <where>
+            u.user_type !=1 and u.user_valid != 1 and u.account_id = a.id
+          </where>
+          ORDER BY u.user_createtime DESC
+          LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="listByParams" parameterMap="params" resultType="User">
+        SELECT u.id,
+               u.user_id as userId,
+               u.user_name as userName,
+               u.user_password as password,
+               u.user_paypwd as payPwd,
+               u.user_type as type,
+               u.user_valid as valid,
+               u.user_areacode as areaCode,
+               u.user_phone as phone,
+               u.user_createtime as createTime,
+               u.user_identitycard as identityCard,
+               u.user_desc as description,
+               u.account_id as accountId,
+               a.account_number as accountNumber,
+               u.user_mac as userMac,
+               u.biz_type as bizType
+          FROM t_user u, t_account a
+          <where>
+            u.user_valid != 1 and u.account_id = a.id
+            <if test="type != null and type != -1">
+                 AND u.user_type = #{type}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND u.user_id like CONCAT('%', #{userId}, '%')
+            </if>
+            <if test="accountId != null and accountId != ''">
+                AND u.account_id = #{accountId}
+            </if>
+            <if test="areaCode != null and areaCode != ''">
+                AND u.user_areacode = #{areaCode}
+            </if>
+            <if test="createTime != null">
+                AND u.user_createtime = STR_TO_DATE(#{createTime}, '%Y-%m-%d')
+            </if>
+            <if test="bizType != null and bizType == '1'+'' ">
+                AND (biz_type='1' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '2'+'' ">
+                AND (biz_type='2' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '1|2'+'' " >
+                AND biz_type='1|2'
+            </if>
+          </where>
+          ORDER BY u.user_createtime DESC
+          LIMIT #{beginIndex}, #{pageSize}
+    </select>
+    
+    <select id="count" resultType="java.lang.Integer">
+        SELECT count(*) FROM t_user where user_type !=1 and user_valid != 1 
+    </select>
+    
+    <select id="countByParams" parameterMap="params" resultType="java.lang.Integer">
+        SELECT count(*) FROM t_user
+        <where>
+            user_valid != 1
+            <if test="type != null and type != -1">
+                AND user_type = #{type}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND user_id like CONCAT('%', #{userId}, '%')
+            </if>
+            <if test="accountId != null and accountId != ''">
+                AND account_id = #{accountId}
+            </if>
+            <if test="areaCode != null and areaCode != ''">
+                AND user_areacode = #{areaCode}
+            </if>
+            <if test="createTime != null and createTime != ''">
+                AND user_createtime = STR_TO_DATE(#{createTime}, '%Y-%m-%d')
+            </if>
+            <if test="bizType != null and bizType == '1'+'' ">
+                AND (biz_type='1' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '2'+'' ">
+                AND (biz_type='2' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '1|2'+'' " >
+                AND biz_type='1|2'
+            </if>
+        </where> 
+    </select>
+    
+    <select id="countForOperationAdmin" parameterMap="params" resultType="int">
+         SELECT count(*) FROM t_user
+        <where>
+            user_valid != 1
+            <if test="type == null or type == -1">
+                AND user_type in(0, 2, 3)
+            </if>
+            <if test="type != null and type != -1">
+                AND user_type = #{userType}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND user_id like CONCAT('%', #{userId}, '%')
+            </if>
+            <if test="accountId != null and accountId != ''">
+                AND account_id = #{accountId}
+            </if>
+            <if test="areaCode != null and areaCode != ''">
+                AND user_areacode = #{areaCode}
+            </if>
+            <if test="createTime != null and createTime != ''">
+                AND user_createtime = STR_TO_DATE(#{createTime}, '%Y-%m-%d')
+            </if>
+            <if test="bizType != null and bizType == '1'+'' ">
+                AND (biz_type='1' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '2'+'' ">
+                AND (biz_type='2' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '1|2'+'' " >
+                AND biz_type='1|2'
+            </if>
+        </where>
+    </select>
+
+    <select id="listForOperationAdmin" parameterMap="params" resultType="User">
+        SELECT u.id,
+               u.user_id as userId,
+               u.user_name as userName,
+               u.user_password as password,
+               u.user_paypwd as payPwd,
+               u.user_type as type,
+               u.user_valid as valid,
+               u.user_areacode as areaCode,
+               u.user_phone as phone,
+               u.user_createtime as createTime,
+               u.user_identitycard as identityCard,
+               u.user_desc as description,
+               u.account_id as accountId,
+               a.account_number as accountNumber,
+               u.user_mac as userMac
+          FROM t_user u, t_account a
+          <where>
+            u.user_valid != 1 and u.account_id = a.id
+            <if test="type == null or type == -1">
+                AND u.user_type in(0, 2, 3)
+            </if>
+            <if test="type != null and type != -1">
+                AND u.user_type = #{userType}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND u.user_id like CONCAT('%', #{userId}, '%')
+            </if>
+            <if test="accountId != null and accountId != ''">
+                AND u.account_id = #{accountId}
+            </if>
+            <if test="areaCode != null and areaCode != ''">
+                AND u.user_areacode = #{areaCode}
+            </if>
+            <if test="createTime != null">
+                AND u.user_createtime = STR_TO_DATE(#{createTime}, '%Y-%m-%d')
+            </if>
+            <if test="bizType != null and bizType == '1'+'' ">
+                AND (biz_type='1' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '2'+'' ">
+                AND (biz_type='2' or biz_type='1|2')
+            </if>
+            <if test="bizType != null and bizType == '1|2'+'' " >
+                AND biz_type='1|2'
+            </if>
+          </where>
+          ORDER BY u.user_createtime DESC
+          LIMIT #{beginIndex}, #{pageSize}
+    </select>
+
+    <select id="find" parameterType="User" resultType="User">
+        SELECT id,
+               user_id as userId,
+               user_name as userName,
+               user_password as password,
+               user_paypwd as payPwd,
+               user_type as type,
+               user_valid as valid,
+               user_areacode as areaCode,
+               user_phone as phone,
+               user_createtime as createTime,
+               user_identitycard as identityCard,
+               user_desc as description,
+               account_id as accountId,
+               user_mac as userMac,
+               biz_type as bizType
+          FROM t_user
+         <if test="userId != null">
+            WHERE user_id = #{userId}
+         </if>
+         <if test="password != null">
+            AND user_password = #{password}
+         </if>
+         ORDER BY user_createtime DESC
+    </select>
+    
+</mapper>

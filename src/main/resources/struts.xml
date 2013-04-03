@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+    "http://struts.apache.org/dtds/struts-2.3.dtd">
+<struts>
+    <constant name="struts.custom.i18n.resources" value="applicationResource" />
+
+	<package name="default" extends="struts-default">
+        <default-action-ref name="pageNotFound" />
+        <action name="pageNotFound">
+            <result type="redirect">/404.jsp</result>
+        </action>
+	</package>
+	
+    <!-- 全局通用模块 -->
+    <package name="global" extends="default">
+        <interceptors>
+            <interceptor name="authority" class="com.epay.interceptor.AuthorityInterceptor" />
+            <interceptor-stack name="default">
+                <interceptor-ref name="modelDriven" />
+                <interceptor-ref name="basicStack" />
+                <interceptor-ref name="authority" />
+            </interceptor-stack>
+        </interceptors>
+        
+        <global-results>
+            <result name="login" type="redirect">/user/signin.jsp</result>
+            <result name="exception">/exception.jsp</result>
+        </global-results>
+        
+        <global-exception-mappings>
+            <exception-mapping result="exception" exception="java.lang.Exception" />
+        </global-exception-mappings>
+    </package>
+    
+	<!-- 用户模块 -->
+	<package name="user" namespace="/user" extends="global">
+	   <action name="login" class="com.epay.action.UserAction" method="login">
+            <interceptor-ref name="defaultStack" />
+            <result name="success" type="redirect">/welcome.jsp</result>
+            <result name="input">/user/signin.jsp</result>
+            <result name="error">/error.jsp</result>
+        </action>
+        
+        <action name="logout" class="com.epay.action.UserAction" method="logout">
+            <interceptor-ref name="defaultStack" />
+            <result name="success" type="redirect">/user/signin.jsp</result>
+            <result name="input">/user/signin.jsp</result>
+            <result name="error">/user/signin.jsp</result>
+        </action>
+        
+        <action name="save" class="com.epay.action.UserAction" method="save">
+            <interceptor-ref name="default" />
+            <result name="success">/user/add.jsp</result>
+            <result name="input">/user/add.jsp</result>
+            <result name="error">/user/add.jsp</result>
+        </action>
+        
+        <action name="delete" class="com.epay.action.UserAction" method="delete">
+            <interceptor-ref name="default" />
+            <result name="success" type="redirectAction">index</result>
+            <result name="input">/user/index.jsp</result>
+            <result name="error">/user/index.jsp</result>
+        </action>
+        
+        <action name="update" class="com.epay.action.UserAction" method="update">
+            <interceptor-ref name="default" />
+            <result name="success">/user/edit.jsp</result>
+            <result name="input">/user/edit.jsp</result>
+            <result name="error">/user/edit.jsp</result>
+        </action>
+
+        <action name="password" class="com.epay.action.UserAction" method="changePassword">
+            <interceptor-ref name="default" />
+            <result name="success">/user/password.jsp</result>
+            <result name="input">/user/password.jsp</result>
+            <result name="error">/user/password.jsp</result>
+        </action>
+
+        <action name="profile" class="com.epay.action.UserAction" method="updateProfile">
+            <interceptor-ref name="default" />
+            <result name="success">/user/profile.jsp</result>
+            <result name="input">/user/profile.jsp</result>
+            <result name="error">/user/profile.jsp</result>
+        </action>
+
+        <action name="edit" class="com.epay.action.UserAction" method="edit">
+            <interceptor-ref name="default" />
+            <result name="success">/user/edit.jsp</result>
+            <result name="error">/exception.jsp</result>
+        </action>
+        
+        <action name="index" class="com.epay.action.UserAction">
+            <interceptor-ref name="default" />
+            <result name="success">/user/index.jsp</result>
+        </action>
+        
+        <action name="search" class="com.epay.action.UserAction" method="search">
+            <interceptor-ref name="default" />
+            <result name="success">/user/result.jsp</result>
+        </action>
+        
+        <action name="export" class="com.epay.action.UserAction" method="export">
+            <interceptor-ref name="default" />
+            <result name="success" type="stream">  
+                <param name="contentType">application/vnd.ms-excel</param>  
+                <param name="contentDisposition">attachment;filename="${downloadFileName}"</param>  
+                <param name="bufferSize">1024</param>
+                <param name="inputName">excelFile</param>  
+            </result>  
+        </action>
+        
+	</package>
+
+    <!-- 账户模块 -->
+    <package name="account" namespace="/account" extends="global">
+        <action name="index" class="com.epay.action.AccountAction" method="execute">
+            <interceptor-ref name="default" />
+            <result name="input">/account/index.jsp</result>
+            <result name="error">/account/index.jsp</result>
+            <result name="success">/account/index.jsp</result>
+        </action>
+        <action name="list" class="com.epay.action.AccountAction" method="list">
+            <interceptor-ref name="default" />
+            <result name="input">/account/list.jsp</result>
+            <result name="error">/account/list.jsp</result>
+            <result name="success">/account/list.jsp</result>
+        </action>
+        <action name="save" class="com.epay.action.AccountAction" method="save">
+            <interceptor-ref name="default" />
+            <result name="input">/account/add.jsp</result>
+            <result name="error">/account/add.jsp</result>
+            <result name="success">/account/add.jsp</result>
+        </action>
+        
+        <action name="edit" class="com.epay.action.AccountAction" method="edit">
+            <interceptor-ref name="default" />
+            <result name="success">/account/edit.jsp</result>
+        </action>
+        
+        <action name="delete" class="com.epay.action.AccountAction" method="delete">
+            <interceptor-ref name="default" />
+            <result name="success" type="redirectAction">index</result>
+        </action>
+        
+        <action name="update" class="com.epay.action.AccountAction" method="update">
+            <interceptor-ref name="default" />
+            <result name="success">/account/edit.jsp</result>
+            <result name="input">/account/edit.jsp</result>
+            <result name="error">/account/edit.jsp</result>
+        </action>
+        
+        <action name="fillLogs" class="com.epay.action.AccountAction" method="fillLogs">
+            <interceptor-ref name="default" />
+            <result name="success">/account/fillLogs.jsp</result>
+        </action>
+        
+        <action name="fill" class="com.epay.action.AccountAction" method="fill">
+            <interceptor-ref name="default" />
+            <result name="success">/account/fill.jsp</result>
+            <result name="error">/account/fill.jsp</result>
+        </action>
+    </package>
+    
+    <!-- 报表统计模块 -->
+    <package name="trade" namespace="/test" extends="json-default">
+        
+        <result-types>
+        	<result-type name="json" class="org.apache.struts2.json.JSONResult">
+                <param name="root">dataMap</param>
+                <param name="excludeProperties">SUCCESS</param>
+        	</result-type>
+        </result-types>
+        
+        <interceptors>
+            <interceptor name="authority" class="com.epay.interceptor.AuthorityInterceptor" />
+            <interceptor-stack name="default">
+                <interceptor-ref name="modelDriven" />
+                <interceptor-ref name="basicStack" />
+                <interceptor-ref name="authority" />
+            </interceptor-stack>
+        </interceptors>
+        
+        <action name="pie" class="com.epay.action.ChartAction" method="pie">
+            <interceptor-ref name="default" />
+            <result type="json" />
+        </action>
+        <action name="lineOrColumn" class="com.epay.action.ChartAction" method="lineOrColumn">
+            <interceptor-ref name="default" />
+            <result type="json" />
+        </action>
+    </package>
+    
+    <!-- 交易模块 -->
+    <package name="transaction" namespace="/transaction" extends="global">
+        <action name="index" class="com.epay.action.TransactionAction">
+            <interceptor-ref name="default" />
+            <result name="success">/transaction/index.jsp</result>
+        </action>
+        <action name="search" class="com.epay.action.TransactionAction" method="search">
+            <interceptor-ref name="default" />
+            <result name="success">/transaction/result.jsp</result>
+        </action>
+        <action name="export" class="com.epay.action.TransactionAction" method="export">
+            <interceptor-ref name="default" />
+            <result name="success" type="stream">  
+                <param name="contentType">application/vnd.ms-excel</param>  
+                <param name="contentDisposition">attachment;filename="${downloadFileName}"</param>  
+                <param name="bufferSize">1024</param>
+                <param name="inputName">excelFile</param>  
+            </result>  
+        </action>
+    </package>
+    
+    <!-- 充值模块 -->
+    <package name="charge" namespace="/charge" extends="global">
+        <action name="recharge" class="com.epay.action.RechargeAction" method="recharge">
+            <interceptor-ref name="default" />
+            <result name="success">/charge/recharge.jsp</result>
+            <result name="error">/charge/recharge.jsp</result>
+            <result name="input">/charge/recharge.jsp</result>
+        </action>
+        
+        <action name="index" class="com.epay.action.RechargeAction">
+            <interceptor-ref name="default" />
+            <result name="success">/charge/index.jsp</result>
+        </action>
+        
+        <action name="search" class="com.epay.action.RechargeAction" method="search">
+            <interceptor-ref name="default" />
+            <result name="success">/charge/result.jsp</result>
+        </action>
+        
+        <action name="export" class="com.epay.action.RechargeAction" method="export">
+            <interceptor-ref name="default" />
+            <result name="success" type="stream">  
+                <param name="contentType">application/vnd.ms-excel</param>  
+                <param name="contentDisposition">attachment;filename="${downloadFileName}"</param>  
+                <param name="bufferSize">1024</param>
+                <param name="inputName">excelFile</param>  
+            </result>  
+        </action>
+        
+    </package>
+    
+    <!-- 限费模块 -->
+    <package name="fee" namespace="/fee" extends="global">
+        <action name="index" class="com.epay.action.FeeAction">
+            <interceptor-ref name="default" />
+            <result name="success">/fee/index.jsp</result>
+        </action>
+        
+        <action name="save" class="com.epay.action.FeeAction" method="save">
+            <interceptor-ref name="default" />
+            <result name="success">/fee/add.jsp</result>
+            <result name="error">/fee/add.jsp</result>
+        </action>
+        
+        <action name="edit" class="com.epay.action.FeeAction" method="edit">
+            <result name="success">/fee/edit.jsp</result>
+        </action>
+        
+        <action name="update" class="com.epay.action.FeeAction" method="update">
+            <interceptor-ref name="default" />
+            <result name="success">/fee/edit.jsp</result>
+            <result name="error">/fee/edit.jsp</result>
+        </action>
+        
+        <action name="delete" class="com.epay.action.FeeAction" method="delete">
+            <interceptor-ref name="default" />
+            <result name="success" type="redirectAction">index</result>
+            <result name="error" type="redirectAction">index</result>
+        </action>
+    
+    </package>
+    
+    <!-- QQ码模块 -->
+    <package name="qode" namespace="/qode" extends="global">
+        <action name="save" class="com.epay.action.QodeAction" method="save">
+            <param name="savePath">/upload</param>
+            <result name="success">/qode/import.jsp</result>
+            <result name="input">/qode/import.jsp</result>
+            <interceptor-ref name="fileUpload">
+                <param name="allowedTypes">text/plain</param>
+                <param name="maximumSize">1025956</param>
+            </interceptor-ref>
+            <interceptor-ref name="defaultStack" />
+        </action>
+        
+        <action name="index" class="com.epay.action.QodeAction">
+            <interceptor-ref name="defaultStack" />
+            <result name="success">/qode/index.jsp</result>
+        </action>
+        
+        <action name="search" class="com.epay.action.QodeAction" method="search">
+            <interceptor-ref name="defaultStack" />
+            <result name="success">/qode/result.jsp</result>
+        </action>
+    </package>
+    
+    <package name="proceeds" extends="global" namespace="/proceeds">
+        <action name="save" class="com.epay.action.ProceedsAction" method="save">
+            <interceptor-ref name="defaultStack" />
+            <result name="success">/proceeds/add.jsp</result>
+            <result name="error">/proceeds/add.jsp</result>
+        </action>
+        <action name="index" class="com.epay.action.ProceedsAction">
+            <interceptor-ref name="defaultStack" />
+            <result name="success">/proceeds/index.jsp</result>
+        </action>
+        <action name="search" class="com.epay.action.ProceedsAction" method="search">
+            <interceptor-ref name="defaultStack" />
+            <result name="success">/proceeds/result.jsp</result>
+        </action>
+        <action name="export" class="com.epay.action.ProceedsAction" method="export">
+            <interceptor-ref name="default" />
+            <result name="success" type="stream">  
+                <param name="contentType">application/vnd.ms-excel</param>  
+                <param name="contentDisposition">attachment;filename="${downloadFileName}"</param>  
+                <param name="bufferSize">1024</param>
+                <param name="inputName">excelFile</param>  
+            </result>  
+        </action>
+    </package>
+</struts>
