@@ -47,32 +47,32 @@
                         </div>
                     </s:elseif>
                     <div class="control-group">
-                        <label class="control-label">用户ID</label>
+                        <label class="control-label">用户ID<span class="must">*</span></label>
                         <div class="controls">
                             <input type="text" class="input-meduim" name="user.userId" value="<s:property value='user.userId'/>" readonly="readonly">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">登录密码</label>
+                        <label class="control-label">登录密码<span class="must">*</span></label>
                         <div class="controls">
                             <input type="password" class="input-meduim" name="user.password">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">重复密码</label>
+                        <label class="control-label">重复密码<span class="must">*</span></label>
                         <div class="controls">
                             <input type="password" class="input-meduim" name="">
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">绑定账户</label>
+                        <label class="control-label">绑定账户<span class="must">*</span></label>
                         <div class="controls">
 	                        <s:action var="list" name="list" namespace="/account" />
 	                        <s:select name="user.accountId" list="#list.accounts" listKey="id" listValue="accountNumber" value="user.accountId"/>
                         </div>
                     </div>
                     <div class="control-group">
-                         <label class="control-label">业务类型</label>
+                         <label class="control-label">业务类型<span class="must">*</span></label>
                          <label class="checkbox inline" style="width: 42px; padding-left: 40px;">
                              <s:if test="bizType.contains(\"1\")">
 	                             <input type="checkbox" name="bizType" value="1" checked="checked">QQ币
@@ -95,7 +95,7 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">用户类型</label>
+                        <label class="control-label">用户类型<span class="must">*</span></label>
                         <div class="controls">
                             <s:if test="#session.LOGIN_USER.type == 1">
 	                            <s:select name="user.type" list="#{'0':'普通用户', '1':'管理员', '2':'操作管理员', '3': '财务管理员'}" value="user.type" cssClass="input-meduim" />
@@ -109,13 +109,13 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">状态</label>
+                        <label class="control-label">状态<span class="must">*</span></label>
                         <div class="controls">
                             <s:select name="user.valid" list="#{'0':'有效', '1':'无效'}" value="user.valid" cssClass="input-meduim" />
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">地市</label>
+                        <label class="control-label">地市<span class="must">*</span></label>
                         <div class="controls">
                             <s:select name="user.areaCode" list="#{'0731':'长沙市', '0733':'株洲市','0732':'湘潭市', '0734':'衡阳市','0739':'邵阳市', '0730':'岳阳市',  '0736':'常德市', '0744':'张家界','0737':'益阳市','0735':'郴州市', '0746':'永州市', '0745':'怀化市', '0738':'娄底市', '0743':'湘西州'}" value="user.areaCode" />
                         </div>
@@ -133,7 +133,7 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">身份证号</label>
+                        <label class="control-label">身份证号<span class="must">*</span></label>
                         <div class="controls">
                             <input type="text" class="input-xxlarge" name="user.identityCard" value="<s:property value='user.identityCard'/>">
                         </div>
